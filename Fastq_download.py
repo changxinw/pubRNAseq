@@ -111,14 +111,15 @@ def salmonRun(gsm, species, lay_type, output):
     fastq1 = "%s/fastq/%s.fastq_R1" % (output, gsm)
     fastq2 = "%s/fastq/%s.fastq_R2" % (output, gsm)
     if species == 'hg38':
-        cmd = '%s quant -i %s -l -A'%(smn, hg38_index)
+        cmd = '%s quant -i %s -l A'%(smn, hg38_index)
     elif species == 'mm10':
-        cmd = '%s quant -i %s -l -A' % (smn, mm10_index)
+        cmd = '%s quant -i %s -l A' % (smn, mm10_index)
     else:
         print "We do not support other genome index! Select hg38 or mm10 instead!"
-    if lay_type == "SINGLE" and os.path.exists(fastq):
+        sys.exit(0)
+    if lay_type == "SINGLE":
         cmd = cmd + ' -r %s -o %s \n'%(fastq, output)
-    elif os.path.exists(fastq1) and os.path.exists(fastq2):
+    else:
         cmd = cmd + ' -1 %s -2 %s -o %s \n'%(fastq1, fastq2, output)
     return cmd
 
@@ -156,7 +157,7 @@ def main():
         cmd_file = open("%s/%s.sh"%(args.outputdir, args.gsm), "w")
         cmd_file.write(cmd)
         cmd_file.close()
-        os.system("nohup bash %s/%s.sh > %s.log &"%(args.outputdir, args.gsm, args.gsm))
+        os.system("bash %s/%s.sh"%(args.outputdir, args.gsm))
         # os.system("rm %s/%s.sh"%(args.outputdir, args.gsm))
     except KeyboardInterrupt:
         sys.stderr.write("User interrupted me!\n")

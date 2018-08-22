@@ -6,10 +6,30 @@ import argparse
 
 #Set up the path to the fastq-dump here
 fdmp = 'fastq-dump'
+#Set up the path to salmon software
+smn = '/data5/home/changxin/miniconda2/envs/salmon/bin/salmon'
+#Set up the path to genome index
+hg38_index = "/data5/home/changxin/genome_index/salmon_refseq_hg38"
+mm10_index = "/data5/home/changxin/genome_index/salmon_refseq_mm10"
+
 ###This code still require the checking read length script
 
-# transfer the sra files to fastqfiles and cat the multiple fastq files
-def catfastq(main_path, gsm, srr, lay_type):
+
+# check fastq file
+def checkFastq(X):
+    X = X.split(',')
+    for q in X:
+        if not os.path.exists(q):
+            return False
+        elif os.path.exists(q) and (os.path.getsize(q) == 0):
+            return False
+        else:
+            pass
+    return True  # return correct fastq flag
+
+
+# download sra files and transfer the sra files to fastqfiles and cat the multiple fastq files
+def catFastq(main_path, gsm, srr, lay_type):
     main_path = "%s/%s"%(main_path, gsm)
     cmd = 'mkdir %s \n'%main_path
     cmd = cmd + 'mkdir %s/fastq \n'%main_path
@@ -40,11 +60,13 @@ def catfastq(main_path, gsm, srr, lay_type):
         cmd = cmd + 'cat %s> %s/fastq/%s.fastq_R1 \n'%(cat_file1, main_path,gsm)
         cmd = cmd + 'cat %s> %s/fastq/%s.fastq_R2 \n'%(cat_file2, main_path,gsm)
         cmd = cmd + 'rm %s/%s_* \n'%(main_path, gsm)
-        cmd = cmd + 'rmdir %s/ \n' % (main_path)
+        # cmd = cmd + 'rmdir %s/ \n' % (main_path)
     return cmd
 
+
 # get link sequece type and return the path of sbatch file
-def LinkPlusDownload(gsm, path, refresh = True):
+def gsmInfo(gsm, path):
+    path = "%s/%s/"%(path, gsm)
     os.system('echo %s'%gsm)
         # gsm_url is the link of the input GSM data
     try:
@@ -73,42 +95,68 @@ def LinkPlusDownload(gsm, path, refresh = True):
         if lay_type == 'SINGLE':
             fastq_file = '%s/fastq/%s.fastq'%(path, gsm)
         elif lay_type == 'PAIRED':
-            fastq_file = '%s/fastq/%s.fastq_R1,%s/fastq/%s.fastq_R2'%(path,gsm,path,gsm)
-        cmd_file = open("%s/%s.sh"%(path, gsm),"w")
-        def checkFastq(X):
-            X = X.split(',')
-            for q in X:
-                if not os.path.exists(q):
-                    return False
-                elif os.path.exists(q) and (os.path.getsize(q) == 0):
-                    return False
-                else:
-                    pass
-            return True # return correct fastq flag
-        # check whether need to download fastq again, by fastq existence and the size ?= 0
-        if refresh: # new samples need to download fastq
-            cmd_file.write(catfastq(path, gsm, srr, lay_type)+'\n')
-        elif (not refresh) and (not checkFastq(fastq_file)):# rerun samples but fastq is not correct.
-            cmd_file.write(catfastq(path, gsm, srr, lay_type)+'\n')
-        else:
-            pass
-        cmd_file.close()
-        return '%s/%s.sh'%(path,gsm),lay_type
+            fastq_file = '%s/fastq/%s.fastq_R1,%s/fastq/%s.fastq_R2'%(path, gsm, path, gsm)
+        return srr, lay_type, fastq_file
     except:
-        print(sys.exc_info())
-        return None, None
-        # print 'failure gsm : %s'%gsm
+        print 'failure gsm : %s' % gsm
+        return None
+
+
+# Generate the command to run salmon
+def salmonRun(gsm, species, lay_type, output):
+    ### fastq should be a list of fastq files
+    cmd = ''
+    output = "%s/%s"%(output, gsm)
+    fastq = "%s/fastq/%s.fastq" % (output, gsm)
+    fastq1 = "%s/fastq/%s.fastq_R1" % (output, gsm)
+    fastq2 = "%s/fastq/%s.fastq_R2" % (output, gsm)
+    if species == 'hg38':
+        cmd = '%s quant -i %s -l -A'%(smn, hg38_index)
+    elif species == 'mm10':
+        cmd = '%s quant -i %s -l -A' % (smn, mm10_index)
+    else:
+        print "We do not support other genome index! Select hg38 or mm10 instead!"
+    if lay_type == "SINGLE" and os.path.exists(fastq):
+        cmd = cmd + ' -r %s -o %s \n'%(fastq, output)
+    elif os.path.exists(fastq1) and os.path.exists(fastq2):
+        cmd = cmd + ' -1 %s -2 %s -o %s \n'%(fastq1, fastq2, output)
+    return cmd
 
 
 def main():
     try:
-        parser = argparse.ArgumentParser(description="""download srr file and translate to fastq""")
-        # parser.add_argument( '-i', dest='inputable', type=str, required=True, help='path of the input table')
-        parser.add_argument( '-g', dest='gsm', type=str, required=True, help='gsm ID of the file')
-        parser.add_argument( '-o', dest='outputdir', type=str, required=True, help='directory of output file')
+        parser = argparse.ArgumentParser(description="""get fastq file from gsm and run salmon maybe""")
+        parser.add_argument( '-s', '--species', dest='species', type=str, required=False, choices=['hg38', 'mm10'], help='select either hg38 or mm10')
+        parser.add_argument( '-g', '--gsm', dest='gsm', type=str, required=True, help='gsm ID of the file')
+        parser.add_argument( '-o', '--output', dest='outputdir', type=str, required=True, help='directory of output file')
+        parser.add_argument( '-sal', '--salmon', dest='salmon', action='store_true', help='whether to run salmon for the fastq')
         args = parser.parse_args()
-        LinkPlusDownload(args.gsm, args.outputdir)
-        # os.system("bash %s/%s.sh"%(args.outputdir, args.gsm))
+        if args.salmon:
+            print "You will run salmon for %s"%args.gsm
+            if not args.species:
+                sys.stderr.write("Plese include species information if you want to run salmon!\n")
+                sys.exit(0)
+            else:
+                srr, lay_type, fastq_file = gsmInfo(args.gsm, args.outputdir)
+                if checkFastq(fastq_file):
+                    print "Fastq file of %s exists, I will skip download of fastq file"%args.gsm
+                    cmd = salmonRun(args.gsm, args.species, lay_type, args.outputdir)
+                else:
+                    cmd = catFastq(args.outputdir, args.gsm, srr, lay_type)
+                    cmd = cmd + salmonRun(args.gsm, args.species, lay_type, args.outputdir)
+        else:
+            print "You will only get fastq for %s"%args.gsm
+            srr, lay_type, fastq_file = gsmInfo(args.gsm, args.outputdir)
+            if checkFastq(fastq_file):
+                print "Fastq file of %s exists, I will skip download of fastq file"%args.gsm
+                cmd = " "
+            else:
+                cmd = catFastq(args.outputdir, args.gsm, srr, lay_type)
+        cmd = cmd + "rm %s/%s.sh \n"%(args.outputdir, args.gsm)
+        cmd_file = open("%s/%s.sh"%(args.outputdir, args.gsm), "w")
+        cmd_file.write(cmd)
+        cmd_file.close()
+        os.system("nohup bash %s/%s.sh > %s.log &"%(args.outputdir, args.gsm, args.gsm))
         # os.system("rm %s/%s.sh"%(args.outputdir, args.gsm))
     except KeyboardInterrupt:
         sys.stderr.write("User interrupted me!\n")

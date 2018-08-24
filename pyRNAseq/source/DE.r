@@ -16,7 +16,7 @@ files = sapply(gsm, function(i){paste0(output, i, '/quant.sf')})
 # condition = c('Ctrl', 'Ctrl', 'Treat', 'Treat')
 names = names(gsm)
 sampleTable <- data.frame(sampleName = files, fileName = files, condition = condition)
-txi_tx <- tximport(files, type="salmon", ignoreTxVersion = T, txOut=T)
+txi_tx <- tximport(files, type="salmon", ,ignoreTxVersion = TRUE, txOut = TRUE, countsFromAbundance = "scaledTPM")
 dds_tx <- DESeqDataSetFromTximport(txi_tx,colData=sampleTable,design=~condition)
 dds_tx <- dds_tx[rowSums(counts(dds_tx)) > 1, ]
 dds_tx <- DESeq(dds_tx,fitType="local")

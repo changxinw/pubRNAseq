@@ -21,4 +21,4 @@ dds_tx <- DESeqDataSetFromTximport(txi_tx,colData=sampleTable,design=~condition)
 dds_tx <- dds_tx[rowSums(counts(dds_tx)) > 1, ]
 dds_tx <- DESeq(dds_tx,fitType="local")
 res_tx <- results(dds_tx, alpha = 0.01)
-write.csv(res_tx, paste0(output, '/DE_table.txt'), sep='\t', row.names=T, col.names=T)
+write.table(res_tx, paste0(output, '/DE_table.txt'), sep='\t', quote=F)

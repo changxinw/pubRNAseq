@@ -1,0 +1,7 @@
+{
+  "fastq-dump": "fastq-dump",
+  "salmon": "salomon",
+  "hg38": "/data5/home/changxin/genome_index/salmon_refseq_hg38",
+  "mm10": "/data5/home/changxin/genome_index/salmon_refseq_mm10",
+  "r": "/data5/home/changxin/R-3.4.4/bin/Rscript"
+}

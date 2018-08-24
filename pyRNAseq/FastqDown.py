@@ -1,16 +1,19 @@
 import os, sys
 import urllib2
 import re
-# import commands
+import json
 import argparse
+from pkg_resources import resource_filename
 
+with open(resource_filename('pyRNAseq','source/config.json')) as json_data_file:
+    json_data = json.load(json_data_file)
 #Set up the path to the fastq-dump here
-fdmp = 'fastq-dump'
+    fdmp = json_data['fastq-dump']
 #Set up the path to salmon software
-smn = '/data5/home/changxin/miniconda2/envs/salmon/bin/salmon'
+    smn = json_data['salmon']
 #Set up the path to genome index
-hg38_index = "/data5/home/changxin/genome_index/salmon_refseq_hg38"
-mm10_index = "/data5/home/changxin/genome_index/salmon_refseq_mm10"
+    hg38_index = json_data['hg38']
+    mm10_index = json_data['mm10']
 
 ###This code still require the checking read length script
 
@@ -98,7 +101,7 @@ def gsmInfo(gsm, path):
             fastq_file = '%s/fastq/%s.fastq_R1,%s/fastq/%s.fastq_R2'%(path, gsm, path, gsm)
         return srr, lay_type, fastq_file
     except:
-        print 'failure gsm : %s' % gsm
+        os.system('echo failure gsm : %s' % gsm)
         return None
 
 
@@ -115,7 +118,7 @@ def salmonRun(gsm, species, lay_type, output):
     elif species == 'mm10':
         cmd = '%s quant -i %s -l A' % (smn, mm10_index)
     else:
-        print "We do not support other genome index! Select hg38 or mm10 instead!"
+        os.system("echo We do not support other genome index! Select hg38 or mm10 instead!")
         sys.exit(0)
     if lay_type == "SINGLE":
         cmd = cmd + ' -r %s -o %s \n'%(fastq, output)
@@ -133,23 +136,23 @@ def main():
         parser.add_argument( '-sal', '--salmon', dest='salmon', action='store_true', help='whether to run salmon for the fastq')
         args = parser.parse_args()
         if args.salmon:
-            print "You will run salmon for %s"%args.gsm
+            os.system(" echo You will run salmon for %s"%args.gsm)
             if not args.species:
                 sys.stderr.write("Plese include species information if you want to run salmon!\n")
                 sys.exit(0)
             else:
                 srr, lay_type, fastq_file = gsmInfo(args.gsm, args.outputdir)
                 if checkFastq(fastq_file):
-                    print "Fastq file of %s exists, I will skip download of fastq file"%args.gsm
+                    os.system("echo Fastq file of %s exists, I will skip download of fastq file"%args.gsm)
                     cmd = salmonRun(args.gsm, args.species, lay_type, args.outputdir)
                 else:
                     cmd = catFastq(args.outputdir, args.gsm, srr, lay_type)
                     cmd = cmd + salmonRun(args.gsm, args.species, lay_type, args.outputdir)
         else:
-            print "You will only get fastq for %s"%args.gsm
+            os.system("echo You will only get fastq for %s"%args.gsm)
             srr, lay_type, fastq_file = gsmInfo(args.gsm, args.outputdir)
             if checkFastq(fastq_file):
-                print "Fastq file of %s exists, I will skip download of fastq file"%args.gsm
+                os.system("echo Fastq file of %s exists, I will skip download of fastq file"%args.gsm)
                 cmd = " "
             else:
                 cmd = catFastq(args.outputdir, args.gsm, srr, lay_type)
@@ -158,7 +161,6 @@ def main():
         cmd_file.write(cmd)
         cmd_file.close()
         os.system("bash %s/%s.sh"%(args.outputdir, args.gsm))
-        # os.system("rm %s/%s.sh"%(args.outputdir, args.gsm))
     except KeyboardInterrupt:
         sys.stderr.write("User interrupted me!\n")
         sys.exit(0)

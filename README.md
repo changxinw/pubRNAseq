@@ -1,2 +1,2 @@
 # pyRNAseq
-A python RNAseq analysis pipeline
+A python2 RNAseq analysis pipeline

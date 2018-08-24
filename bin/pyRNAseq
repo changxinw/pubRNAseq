@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+
+#########################
+####   Changson Wan   ###
+####    06-11-2018    ###
+####   version 2.0.0  ###
+#########################
+
+"""Script Description:
+
+pyRNAseq: Public RNAseq data analysis with the input of design matrix as below
+
+GSM***  Control
+GSM***  Control
+GSM***  Treatment
+GSM***  Treatment
+
+This code is free software; you can redistribute it and/or modify it.
+
+@version: $1.0.0$
+@author: Changson Wan
+@contact: wchangson@gmail.com
+"""
+import os
+import sys
+import json
+import argparse
+from pkg_resources import resource_filename
+from pyRNAseq import FastqDown
+from pyRNAseq.OptCheck import opt_check
+
+
+def prepare_argparser():
+
+    """Prepare optparser object. New options will be added in this
+    function first.
+    """
+
+    description = "pyRNAseq --- Public RNAseq data analysis with python"
+    epilog = "For command line options of each command, type: %(prog)s COMMAND -h"
+    VERSION = '1.0.0'
+    parser = argparse.ArgumentParser(description=description, epilog=epilog)  # , usage = usage
+    parser.add_argument("--version", action="version", version="%(prog)s " + VERSION)
+    parser.add_argument( '-d', '--dmat', dest='dmat', type=str, required=True, help='design matrix with GSM ID and experiment design')
+    parser.add_argument( '-o', '--output', dest='output', type=str, required=True, help='directory of output file')
+    parser.add_argument( '-s', '--species', dest='species', type=str, required=False, choices=['hg38', 'mm10'], help='select either hg38 or mm10')
+    parser.add_argument( '-sal', '--salmon', dest='salmon', action='store_true', help='whether to run salmon for the fastq')
+    parser.add_argument( '-de', '--difexpr', dest='difexpr', action='store_true', help='whether to run differial expression with DESeq2')
+    return parser
+
+
+def main():
+
+    """The Main function/pipeline for pyRNAseq"""
+
+    argparser = prepare_argparser()
+    args = argparser.parse_args()
+    if not opt_check(args):
+        os.system("echo Invalid options for pyRNAseq!")
+        sys.exit(0)
+    with open(args.dmat) as design_matrix:
+        gsms = map( lambda x: x.split('\t')[0], design_matrix.readlines())
+    cmd = ''
+    for gsm in gsms:
+        srr, lay_type, fastq_file = FastqDown.gsmInfo(gsm, args.output)
+        if args.salmon:
+                cmd = cmd + FastqDown.catFastq(args.output, gsm, srr, lay_type)
+                cmd = cmd + FastqDown.salmonRun(gsm, args.species, lay_type, args.output)
+        else:
+                cmd = cmd + FastqDown.catFastq(args.output, gsm, srr, lay_type)
+        if args.difexpr:
+            with open(resource_filename('pyRNAseq','source/config.json')) as json_data_file:
+                rscript = json.load(json_data_file)['r']
+            cmd = cmd + '%s %s %s %s \n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output)
+        prefix = args.dmat.split('/')[-1].split('.')[0]
+        cmd = cmd + 'rm %s/%s.sh \n'%(args.output, prefix)
+        cmd_file = open("%s/%s.sh"%(args.output, prefix), "w")
+        cmd_file.write(cmd)
+        cmd_file.close()
+        os.system("bash %s/%s.sh"%(args.output, prefix))
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.stderr.write("User interrunpt me! ;-) Bye!\n")
+        sys.exit(0)

@@ -21,7 +21,7 @@ def main():
           author='Changson Wan',
           author_email='wchangson@gmail.com',
           package_dir={'pyRNAseq': 'pyRNAseq'},
-          install_requires=['argparse'],
+          install_requires= [],
           packages=['pyRNAseq'],
           scripts=['bin/pyRNAseq'],
           package_data={'pyRNAseq': ['source/*']},

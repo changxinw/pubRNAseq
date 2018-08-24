@@ -68,16 +68,16 @@ def main():
                 cmd = cmd + FastqDown.salmonRun(gsm, args.species, lay_type, args.output)
         else:
                 cmd = cmd + FastqDown.catFastq(args.output, gsm, srr, lay_type)
-        if args.difexpr:
-            with open(resource_filename('pyRNAseq','source/config.json')) as json_data_file:
-                rscript = json.load(json_data_file)['r']
-            cmd = cmd + '%s %s %s %s \n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output)
-        prefix = args.dmat.split('/')[-1].split('.')[0]
-        cmd = cmd + 'rm %s/%s.sh \n'%(args.output, prefix)
-        cmd_file = open("%s/%s.sh"%(args.output, prefix), "w")
-        cmd_file.write(cmd)
-        cmd_file.close()
-        os.system("bash %s/%s.sh"%(args.output, prefix))
+    if args.difexpr:
+        with open(resource_filename('pyRNAseq','source/config.json')) as json_data_file:
+            rscript = json.load(json_data_file)['r']
+        cmd = cmd + '%s %s %s %s \n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output)
+    prefix = args.dmat.split('/')[-1].split('.')[0]
+    cmd = cmd + 'rm %s/%s.sh \n'%(args.output, prefix)
+    cmd_file = open("%s/%s.sh"%(args.output, prefix), "w")
+    cmd_file.write(cmd)
+    cmd_file.close()
+    os.system("bash %s/%s.sh"%(args.output, prefix))
 
 
 if __name__ == '__main__':

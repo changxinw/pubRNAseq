@@ -11,7 +11,17 @@ Public RNAseq data analysis pipline based on python2 and R. The basic workflow i
 	git clone https://github.com/WChangson/pyRNAseq.git
 	cd pyRNAseq/source/
 
-You can see a _config.json_ here. Open the file and set up the path of fastq-dump in the first line, the path of salmon in the second line, and the path of R  script you want to use in the third line. If you install those software globally, your can keep them as _fastq-dump_, _salmon_, _Rscript_. The fourth and fifth line is for the salmon index of hg38 and mm10.
+You can see a _config.json_ here.
+
+    {
+        "fastq-dump": "fastq-dump",
+        "salmon": "/data5/home/changxin/miniconda2/envs/salmon/bin/salmon",
+        "r": "/data5/home/changxin/R-3.4.4/bin/Rscript",
+        "hg38": "/data5/home/changxin/genome_index/salmon_refseq_hg38",
+        "mm10": "/data5/home/changxin/genome_index/salmon_refseq_mm10"
+    }
+
+Open the file and set up the path of fastq-dump in the first line, the path of salmon in the second line, and the path of R  script you want to use in the third line. If you install those software globally, your can keep them as _fastq-dump_, _salmon_, _Rscript_. The fourth and fifth line is for the salmon index of hg38 and mm10.
 
 	cd ..
 	python setup.py install

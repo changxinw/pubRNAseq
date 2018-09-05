@@ -114,9 +114,9 @@ def salmonRun(gsm, species, lay_type, output):
     fastq1 = "%s/fastq/%s.fastq_R1" % (output, gsm)
     fastq2 = "%s/fastq/%s.fastq_R2" % (output, gsm)
     if species == 'hg38':
-        cmd = '%s quant -i %s -l A'%(smn, hg38_index)
+        cmd = '%s quant -i %s -l A --numBootstraps 100 -p 4 --gcBias'%(smn, hg38_index)
     elif species == 'mm10':
-        cmd = '%s quant -i %s -l A' % (smn, mm10_index)
+        cmd = '%s quant -i %s -l A --numBootstraps 100 -p 4 --gcBias' % (smn, mm10_index)
     else:
         os.system("echo We do not support other genome index! Select hg38 or mm10 instead!")
         sys.exit(0)

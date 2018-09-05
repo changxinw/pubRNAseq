@@ -21,8 +21,8 @@ sampleTable <- data.frame(sampleName = files, fileName = files, condition = cond
 txi_tx <- tximport(files, type="salmon", ,ignoreTxVersion = TRUE, txOut = TRUE, countsFromAbundance = "scaledTPM", dropInfReps = TRUE)
 dds_tx <- DESeqDataSetFromTximport(txi_tx,colData=sampleTable,design=~condition)
 dds_tx <- dds_tx[rowSums(counts(dds_tx)) > 1, ]
-dds_tx <- DESeq(dds_tx,fitType="local")
-res_tx <- results(dds_tx, alpha = 0.01)
+dds_tx <- DESeq(dds_tx)
+res_tx <- results(dds_tx, alpha = 0.05)
 de_new = na.omit(res_tx)
 refseq =read.table(ref, sep = "\t", row.names = 1)
 

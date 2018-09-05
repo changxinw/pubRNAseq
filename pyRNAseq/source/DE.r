@@ -28,9 +28,9 @@ refseq =read.table(ref, sep = "\t", row.names = 1)
 
 co_index = intersect(rownames(de_new), rownames(refseq))
 result = cbind(de_new[co_index,], refseq[co_index,"V6"])
-colnames(result)  = "symbol"
+colnames(result)[7]  = "symbol"
 result = result[order(result[,6]),]
-result2 = distinct(result, symbol, .keep_all = TRUE)
+result2 = distinct(as.data.frame(result), symbol, .keep_all = TRUE)
 rownames(result2) = result2$symbol
 
 write.table(result2[,1:6], paste0(output, '/DE_table.csv'), sep='\t', quote=F)

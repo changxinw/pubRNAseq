@@ -1,8 +1,15 @@
-library(tximport)
-library(readr)
-library(DESeq2)
-library(rjson)
-library(dplyr)
+required_Packages = c("tximport", "readr", "DESeq2",
+                      "rjson", "dplyr")
+if(!all(required_Packages %in% installed.packages())){
+	source("https://bioconductor.org/biocLite.R")
+	biocLite(setdiff(required_Packages, installed.packages()))
+}
+
+require(tximport)
+require(readr)
+require(DESeq2)
+require(rjson)
+require(dplyr)
 
 args=commandArgs(T)
 design_path = args[1] # Path of design matrix

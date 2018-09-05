@@ -59,7 +59,7 @@ def main():
         os.system("echo Invalid options for pyRNAseq!")
         sys.exit(0)
     with open(args.dmat) as design_matrix:
-        gsms = map( lambda x: x.split('\t')[0], design_matrix.readlines())
+        gsms = map(lambda x: x.split('\t')[0], design_matrix.readlines())
     cmd = ''
     for gsm in gsms:
         srr, lay_type, fastq_file = FastqDown.gsmInfo(gsm, args.output)
@@ -71,7 +71,7 @@ def main():
     if args.difexpr:
         with open(resource_filename('pyRNAseq','source/config.json')) as json_data_file:
             rscript = json.load(json_data_file)['r']
-        cmd = cmd + '%s %s %s %s \n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output, resource_filename('pyRNAseq','source/%s.refseq'%args.species))
+        cmd = cmd + '%s %s %s %s %s\n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output, resource_filename('pyRNAseq','source/%s.refseq'%args.species))
 #    prefix = args.dmat.split('/')[-1].split('.')[0]
 #    cmd = cmd + 'rm %s/cmd.sh \n'%(args.output)
     cmd_file = open("%s/cmd.sh"%(args.output), "w")

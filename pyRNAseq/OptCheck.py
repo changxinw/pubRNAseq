@@ -42,3 +42,4 @@ def opt_check(opt):
         sys.exit(0)
     else:
         return 1
+    return 1

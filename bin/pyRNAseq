@@ -71,13 +71,13 @@ def main():
     if args.difexpr:
         with open(resource_filename('pyRNAseq','source/config.json')) as json_data_file:
             rscript = json.load(json_data_file)['r']
-        cmd = cmd + '%s %s %s %s \n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output)
-    prefix = args.dmat.split('/')[-1].split('.')[0]
-    cmd = cmd + 'rm %s/%s.sh \n'%(args.output, prefix)
-    cmd_file = open("%s/%s.sh"%(args.output, prefix), "w")
+        cmd = cmd + '%s %s %s %s \n'%(rscript, resource_filename('pyRNAseq','source/DE.r'), args.dmat, args.output, resource_filename('pyRNAseq','source/%s.refseq'%args.species))
+#    prefix = args.dmat.split('/')[-1].split('.')[0]
+#    cmd = cmd + 'rm %s/cmd.sh \n'%(args.output)
+    cmd_file = open("%s/cmd.sh"%(args.output), "w")
     cmd_file.write(cmd)
     cmd_file.close()
-    os.system("bash %s/%s.sh"%(args.output, prefix))
+#    os.system("bash %s/%s.sh"%(args.output, prefix))
 
 
 if __name__ == '__main__':

@@ -60,8 +60,8 @@ def catFastq(main_path, gsm, srr, lay_type):
             cmd = cmd + '%s --split-files %s/%s_%s.sra -O %s/\n'%(fdmp, main_path, gsm,i+1, main_path)
             cat_file1 = cat_file1 + '%s/%s_%s_1.fastq '%(main_path, gsm,i+1)
             cat_file2 = cat_file2 + '%s/%s_%s_2.fastq '%(main_path, gsm,i+1)
-        cmd = cmd + 'cat %s> %s/fastq/%s.fastq_R1 \n'%(cat_file1, main_path,gsm)
-        cmd = cmd + 'cat %s> %s/fastq/%s.fastq_R2 \n'%(cat_file2, main_path,gsm)
+        cmd = cmd + 'cat %s> %s/fastq/%s_R1.fastq \n'%(cat_file1, main_path,gsm)
+        cmd = cmd + 'cat %s> %s/fastq/%s_R2.fastq \n'%(cat_file2, main_path,gsm)
         cmd = cmd + 'rm %s/%s_* \n'%(main_path, gsm)
         # cmd = cmd + 'rmdir %s/ \n' % (main_path)
     return cmd
@@ -98,7 +98,7 @@ def gsmInfo(gsm, path):
         if lay_type == 'SINGLE':
             fastq_file = '%s/fastq/%s.fastq'%(path, gsm)
         elif lay_type == 'PAIRED':
-            fastq_file = '%s/fastq/%s.fastq_R1,%s/fastq/%s.fastq_R2'%(path, gsm, path, gsm)
+            fastq_file = '%s/fastq/%s_R1.fastq,%s/fastq/%s_R2.fastq'%(path, gsm, path, gsm)
         return srr, lay_type, fastq_file
     except:
         os.system('echo failure gsm : %s' % gsm)
@@ -111,8 +111,8 @@ def salmonRun(gsm, species, lay_type, output):
     cmd = ''
     output = "%s/%s"%(output, gsm)
     fastq = "%s/fastq/%s.fastq" % (output, gsm)
-    fastq1 = "%s/fastq/%s.fastq_R1" % (output, gsm)
-    fastq2 = "%s/fastq/%s.fastq_R2" % (output, gsm)
+    fastq1 = "%s/fastq/%s_R1.fastq" % (output, gsm)
+    fastq2 = "%s/fastq/%s_R2.fastq" % (output, gsm)
     if species == 'hg38':
         cmd = '%s quant -i %s -l A --numBootstraps 100 -p 4 --gcBias'%(smn, hg38_index)
     elif species == 'mm10':

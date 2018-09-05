@@ -21,7 +21,7 @@ gsm = as.vector(design_mat[,1])
 condition = as.vector(design_mat[,2])
 # gsm = c('GSM2746716', 'GSM2746717', 'GSM2746718', 'GSM2746719')
 # output = '/data5/home/changxin/tmp/'
-files = sapply(gsm, function(i){paste0(output, i, '/quant.sf')})
+files = sapply(gsm, function(i){paste0(output, '/', i, '/quant.sf')})
 # condition = c('Ctrl', 'Ctrl', 'Treat', 'Treat')
 names = names(gsm)
 sampleTable <- data.frame(sampleName = files, fileName = files, condition = condition)

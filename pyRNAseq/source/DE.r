@@ -25,12 +25,14 @@ files = sapply(gsm, function(i){paste0(output, '/', i, '/quant.sf')})
 # condition = c('Ctrl', 'Ctrl', 'Treat', 'Treat')
 names = names(gsm)
 sampleTable <- data.frame(sampleName = files, fileName = files, condition = condition)
-txi_tx <- tximport(files, type="salmon", ,ignoreTxVersion = TRUE, txOut = TRUE, countsFromAbundance = "scaledTPM", dropInfReps = TRUE)
+txi_tx <- tximport(files, type="salmon", ,ignoreTxVersion = TRUE, txOut = TRUE, dropInfReps = TRUE)
 dds_tx <- DESeqDataSetFromTximport(txi_tx,colData=sampleTable,design=~condition)
 dds_tx <- dds_tx[rowSums(counts(dds_tx)) > 1, ]
 dds_tx <- DESeq(dds_tx)
 res_tx <- results(dds_tx, alpha = 0.05)
-de_new = na.omit(res_tx)
+#de_new = na.omit(res_tx)
+res_tx$padj[is.na(res_tx$padj)] = 1
+de_new = res_tx
 refseq =read.table(ref, sep = "\t", row.names = 1)
 
 co_index = intersect(rownames(de_new), rownames(refseq))

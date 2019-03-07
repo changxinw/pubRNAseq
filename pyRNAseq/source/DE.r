@@ -33,7 +33,10 @@ res_tx <- results(dds_tx, alpha = 0.05)
 #de_new = na.omit(res_tx)
 res_tx$padj[is.na(res_tx$padj)] = 1
 de_new = res_tx
-refseq =read.table(ref, sep = "\t", row.names = 1)
+raw_refseq =read.table(ref, sep = "\t")
+refseq <- raw_refseq[!duplicated(raw_refseq[,1]),]
+rownames(refseq) <- refseq[,1]
+refseq <- refseq[,-1]
 
 co_index = intersect(rownames(de_new), rownames(refseq))
 result = cbind(de_new[co_index,], refseq[co_index,"V6"])

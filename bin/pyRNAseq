@@ -62,6 +62,8 @@ def main():
         gsms = map(lambda x: x.split('\t')[0], design_matrix.readlines())
     cmd = ''
     for gsm in gsms:
+        if not gsm.startwith("GSM"):
+            continue
         srr, lay_type, fastq_file = FastqDown.gsmInfo(gsm, args.output)
         if args.salmon:
                 cmd = cmd + FastqDown.catFastq(args.output, gsm, srr, lay_type)
